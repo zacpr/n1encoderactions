@@ -1,0 +1,44 @@
+{
+  "Name": "N1 Encoder Actions",
+  "Description": "Multi-action support for N1 encoder dial with configurable modes (Volume, Media, Scroll, etc.)",
+  "Author": "Zac Priday",
+  "Version": "0.1.0",
+  "PluginUUID": "net.ashurtech.plugins.n1encoderactions",
+  "CodePathLin": "n1encoderactions",
+  "CodePathWin": "n1encoderactions.exe",
+  "CodePathMac": "n1encoderactions",
+  "Icon": "icon",
+  "Category": "Actions",
+  "OS": [
+    { "Platform": "linux" },
+    { "Platform": "windows" },
+    { "Platform": "mac" }
+  ],
+  "Actions": [
+    {
+      "Name": "Encoder Rotate",
+      "UUID": "net.ashurtech.plugins.n1encoderactions.rotate",
+      "Tooltip": "Triggered when N1 encoder is rotated (INPUT50/51)",
+      "Icon": "rotate",
+      "States": [
+        {
+          "Image": "rotate"
+        }
+      ],
+      "PropertyInspectorPath": "inspector.html",
+      "SupportedInMultiActions": true
+    },
+    {
+      "Name": "Encoder Press",
+      "UUID": "net.ashurtech.plugins.n1encoderactions.press",
+      "Tooltip": "Triggered when N1 encoder is pressed (INPUT35)",
+      "Icon": "press",
+      "States": [
+        {
+          "Image": "press"
+        }
+      ],
+      "SupportedInMultiActions": true
+    }
+  ]
+}

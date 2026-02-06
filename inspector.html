@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>N1 Encoder Settings</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 16px;
+            margin: 0;
+            background: #2d2d2d;
+            color: #ffffff;
+            font-size: 14px;
+        }
+        .setting {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #cccccc;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            background: #1e1e1e;
+            color: #ffffff;
+            border: 1px solid #555;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #0099ff;
+        }
+        .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        .custom-section {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #444;
+        }
+        .custom-section.visible {
+            display: block;
+        }
+        .command-row {
+            margin-bottom: 12px;
+        }
+        .command-row label {
+            font-size: 12px;
+            color: #aaa;
+        }
+        h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="setting">
+        <label for="mode">Action Mode</label>
+        <select id="mode">
+            <option value="volume">🔊 Volume Up/Down</option>
+            <option value="media_track">⏭️⏮️ Next/Previous Track</option>
+            <option value="media_seek">⏩⏪ Seek Forward/Backward</option>
+            <option value="scroll">📜 Scroll Up/Down</option>
+            <option value="brightness">🔆 Brightness Up/Down</option>
+            <option value="custom">⚙️ Custom Commands</option>
+        </select>
+        <div class="hint" id="mode-hint">Rotate to adjust system volume by 5%</div>
+    </div>
+
+    <div class="custom-section" id="custom-section">
+        <h3>Custom Commands</h3>
+        <div class="command-row">
+            <label for="cw-command">Clockwise Command (+1)</label>
+            <input type="text" id="cw-command" placeholder="e.g., xdotool key Right">
+        </div>
+        <div class="command-row">
+            <label for="ccw-command">Counter-Clockwise Command (-1)</label>
+            <input type="text" id="ccw-command" placeholder="e.g., xdotool key Left">
+        </div>
+    </div>
+
+    <script>
+        // OpenDeck Stream Deck connection
+        let websocket = null;
+        let uuid = null;
+        let action = null;
+        
+        const modeHints = {
+            volume: 'Rotate to adjust system volume by 5% (requires: amixer/alsa-utils)',
+            media_track: 'Rotate to skip to next or previous track (requires: playerctl)',
+            media_seek: 'Rotate to seek forward or backward by 5 seconds (requires: playerctl)',
+            scroll: 'Rotate to scroll up or down (requires: xdotool)',
+            brightness: 'Rotate to adjust screen brightness by 10% (requires: brightnessctl)',
+            custom: 'Define your own shell commands below'
+        };
+
+        function connect() {
+            const port = new URLSearchParams(window.location.search).get('port') || '1234';
+            websocket = new WebSocket(`ws://127.0.0.1:${port}`);
+            
+            websocket.onopen = () => {
+                console.log('Connected to Stream Deck');
+            };
+
+            websocket.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                console.log('Received:', message);
+
+                if (message.event === 'didReceiveSettings') {
+                    const settings = message.payload.settings;
+                    if (settings.mode) {
+                        document.getElementById('mode').value = settings.mode;
+                        updateUI(settings.mode);
+                    }
+                    if (settings.cwCommand) {
+                        document.getElementById('cw-command').value = settings.cwCommand;
+                    }
+                    if (settings.ccwCommand) {
+                        document.getElementById('ccw-command').value = settings.ccwCommand;
+                    }
+                } else if (message.event === 'connected') {
+                    uuid = message.payload.uuid;
+                    action = message.payload.action;
+                    
+                    // Request current settings
+                    websocket.send(JSON.stringify({
+                        event: 'getSettings',
+                        context: uuid
+                    }));
+                }
+            };
+            
+            websocket.onclose = () => {
+                console.log('Connection closed, retrying...');
+                setTimeout(connect, 1000);
+            };
+            
+            websocket.onerror = (err) => {
+                console.error('WebSocket error:', err);
+            };
+        }
+
+        function updateUI(mode) {
+            document.getElementById('mode-hint').textContent = modeHints[mode] || '';
+            const customSection = document.getElementById('custom-section');
+            if (mode === 'custom') {
+                customSection.classList.add('visible');
+            } else {
+                customSection.classList.remove('visible');
+            }
+        }
+
+        function saveSettings() {
+            if (!uuid || !websocket) return;
+            
+            const settings = {
+                mode: document.getElementById('mode').value,
+                cwCommand: document.getElementById('cw-command').value,
+                ccwCommand: document.getElementById('ccw-command').value
+            };
+            
+            websocket.send(JSON.stringify({
+                event: 'setSettings',
+                context: uuid,
+                payload: settings
+            }));
+            
+            console.log('Settings saved:', settings);
+        }
+
+        // Event listeners
+        document.getElementById('mode').addEventListener('change', (e) => {
+            updateUI(e.target.value);
+            saveSettings();
+        });
+
+        document.getElementById('cw-command').addEventListener('change', saveSettings);
+        document.getElementById('ccw-command').addEventListener('change', saveSettings);
+
+        // Initialize
+        connect();
+    </script>
+</body>
+</html>
