@@ -1,0 +1,105 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug n1encoderactions",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--package=n1encoderactions"
+                ],
+                "filter": {
+                    "name": "n1encoderactions",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "RUST_LOG": "debug"
+            },
+            "preLaunchTask": "cargo build"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug (Release) n1encoderactions",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--release",
+                    "--package=n1encoderactions"
+                ],
+                "filter": {
+                    "name": "n1encoderactions",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "RUST_LOG": "debug"
+            },
+            "preLaunchTask": "cargo build --release"
+        },
+        {
+            "type": "lldb",
+            "request": "attach",
+            "name": "Attach to n1encoderactions",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--package=n1encoderactions"
+                ],
+                "filter": {
+                    "name": "n1encoderactions",
+                    "kind": "bin"
+                }
+            },
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "cargo build"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Build Plugin Package",
+            "runtimeExecutable": "just",
+            "args": ["package"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Build Linux Release",
+            "runtimeExecutable": "just",
+            "args": ["build-linux"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Collect Plugin Files",
+            "runtimeExecutable": "just",
+            "args": ["collect"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Create Plugin Zip",
+            "runtimeExecutable": "just",
+            "args": ["zip"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        }
+    ]
+}
